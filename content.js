@@ -1,35 +1,28 @@
 (async function () {
-  // let lastUrl = location.href;
 
-  // 페이지 죄다 뒤져서 tag와 text에 맞는 내용 찾기
-  function waitForElementByText(tag, text) {
+  // document 로딩될때까지 기다리기
+  function waitForElement(selector) {
     return new Promise(resolve => {
-      function find() {
-        const elements = document.querySelectorAll(tag);
-
-        for (const el of elements) {
-          if (el.textContent.includes(text)) {
-            return el;
-          }
-        }
-        return null;
-      }
-
-      const found = find();
-      if (found) return resolve(found);
-
+  
+      const el = document.querySelector(selector);
+      if (el) return resolve(el);
+  
       const observer = new MutationObserver(() => {
-        const el = find();
+  
+        const el = document.querySelector(selector);
+  
         if (el) {
           resolve(el);
           observer.disconnect();
         }
+  
       });
-
+  
       observer.observe(document.body, {
         childList: true,
         subtree: true
       });
+  
     });
   }
 
@@ -45,18 +38,7 @@
     return numbers.find(v => v !== 0) ?? 0;
   }
 
-  function hookUrlChange(callback) {
-
-    const pushState = history.pushState;
-  
-    history.pushState = function () {
-      pushState.apply(this, arguments);
-      callback();
-    };
-  
-    window.addEventListener("popstate", callback);
-  }
-
+  // 화면에 재고수량 표시
   function insertStock(stock) {
 
     const btn = document.querySelector('button[data-shp-area="pcs.optquantity"]');
@@ -84,7 +66,12 @@
     const newSpan = document.createElement("span");
   
     newSpan.className = "my-stock";
-    newSpan.textContent = `재고수량 ${stock}`;
+    if (stock == -1){
+      newSpan.textContent = "새로고침필요";
+    }
+    else{
+      newSpan.textContent = `재고수량 ${stock}`;
+    }
 
     if (stock <= 5 && stock != 0) {
       newSpan.style.color = "#ff3b3b";
@@ -106,19 +93,15 @@
   }
 
   try {
-    hookUrlChange(() => {
-      setTimeout(500);
-    });
-
-    // 그냥 Document 불러오기위한 코드
-    await waitForElementByText("p", "궭궭");
+    // Document 로딩 기다리기기
+    const btn = await waitForElement('button[data-shp-area="pcs.optquantity"]');
 
     // 재고수량 찾기
     const stock = getStock();
 
-    // 페이지 로딩이 덜 됐을때 네이버가 기본으로 막 집어넣는 값 검출 - 새로고침 필요
+    // 페이지 로딩이 덜 됐을때 네이버가 기본으로 막 집어넣는 값 검출 <- 새로고침 필요
     if (stock == 1000){
-      insertStock("확인오류");
+      insertStock(-1);
     }
     else{
       insertStock(stock);

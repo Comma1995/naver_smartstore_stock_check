@@ -1,0 +1,17 @@
+{
+    "manifest_version": 3,
+    "name": "Smartstore_showmestock",
+    "version": "0.1.0",
+
+    "description": "스마트스토어에서 재고수량 파악",
+
+    "content_scripts": [
+    {
+        "matches": ["https://brand.naver.com/*"],
+        "js": ["content.js"]
+    }
+    ],
+    "host_permissions": [
+        "https://brand.naver.com/*"
+    ]
+  }
